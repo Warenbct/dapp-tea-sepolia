@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEA Staking</title>
+    <link rel="stylesheet" href="/src/output.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-sky-600 flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-white rounded-xl shadow-lg overflow-hidden">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h1 class="text-2xl font-bold text-gray-600">TEA Staking</h1>
+                <button id="connectWallet"
+                    class="hidden px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition">
+                    Connect Wallet
+                </button>
+                <button id="nativeConnectWallet" onclick="init()"
+                    class="px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition">
+                    Connect Wallet
+                </button>
+            </div>
+
+            <div id="tvlnative" class="hidden mb-6 p-4 bg-sky-50 rounded-lg">
+                <p class="text-sm text-gray-600">Total Value Locked</p>
+                <h3 class="text-xl font-semibold text-gray-600"><span class="text-sky-600" id="totalStaking">0</span> TEA</h3>
+            </div>
+
+            <div id="uniqueNative" class="hidden mb-6 p-4 bg-sky-50 rounded-lg">
+                <p class="text-sm text-gray-600">Unique Stakers</p>
+                <h3 class="flex items-center text-xl font-semibold text-gray-800"><i
+                    class="fa-solid fa-user mr-2 text-[17px] text-sky-600"></i><span class="text-gray-600" id="uniqueStakers">Loading...</span></h3>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="flex items-center text-gray-600 mb-1">
+                        <span class="text-sm">Balance</span>
+                        <i class="fas fa-wallet ml-2 text-sm"></i>
+                    </div>
+                    <div class="text-xl font-semibold text-gray-800">
+                        <span class="text-sky-600" id="balance">0</span> <span class="text-gray-600">TEA</span>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="flex items-center text-gray-600 mb-1">
+                        <span class="text-sm">APY</span>
+                        <i class="fas fa-percentage ml-2 text-sm"></i>
+                    </div>
+                    <div class="text-xl font-semibold text-sky-600">
+                        <span>12.41%</span>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="flex items-center text-gray-600 mb-1">
+                        <span class="text-sm">Staked</span>
+                        <i class="fas fa-lock ml-2 text-sm"></i>
+                    </div>
+                    <div class="text-xl font-semibold text-gray-800">
+                        <span class="text-sky-600" id="stakedAmount">0</span> <span class="text-gray-600">TEA</span>
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="flex items-center text-gray-600 mb-1">
+                        <span class="text-sm">Rewards</span>
+                        <i class="fas fa-coins ml-2 text-sm"></i>
+                    </div>
+                    <div class="text-xl font-semibold text-sky-600">
+                        <span id="rewardAmount">0</span> <span class="text-gray-600">TEA</span>
+                    </div>
+                </div>
+            </div>
+
+            <div id="stakeUnstake" class="hidden mb-6">
+                <div class="flex space-x-2">
+                    <button id="stakeButton"
+                        class="flex-1 px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition flex items-center justify-center">
+                        <i class="fas fa-plus mr-2"></i> Stake
+                    </button>
+                    <button id="unstakeButton"
+                        class="flex-1 px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition flex items-center justify-center">
+                        <i class="fas fa-minus mr-2"></i> Unstake
+                    </button>
+                    <button onclick="claimReward()"
+                        class="flex-1 px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition flex items-center justify-center">
+                        <i class="fas fa-hand-holding-usd mr-2"></i> Claim
+                    </button>
+                </div>
+            </div>
+
+            <div id="stakeSection" class="hidden fade-in mb-6 p-4 bg-sky-50 rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">Stake TEA</h3>
+                <div class="space-y-3">
+                    <div class="flex">
+                        <input id="stakeAmount" type="number"
+                            class="flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+                            placeholder="Enter amount">
+                        <button id="maxStakeAmount" onclick="setMaxStakeAmount()"
+                            class="px-4 py-2 bg-sky-600 text-white rounded-r-lg hover:bg-sky-700 transition">
+                            Max
+                        </button>
+                    </div>
+                    <button onclick="stake()"
+                        class="w-full px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition">
+                        Confirm Stake
+                    </button>
+                </div>
+            </div>
+
+            <div id="unstakeSection" class="hidden fade-in mb-6 p-4 bg-sky-50 rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">Unstake TEA</h3>
+                <div class="space-y-3">
+                    <div class="flex">
+                        <input id="unstakeAmount" type="number"
+                            class="flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-sky-500"
+                            placeholder="Enter amount">
+                        <button id="maxStakeAmount" onclick="setMaxUnstakeAmount()"
+                            class="px-4 py-2 bg-sky-600 text-white rounded-r-lg hover:bg-sky-700 transition">
+                            Max
+                        </button>
+                    </div>
+                    <button onclick="unstakePartial()"
+                        class="w-full px-4 py-2 bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition">
+                        Confirm Unstake
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.5.2/dist/web3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+</body>
+
+</html>
